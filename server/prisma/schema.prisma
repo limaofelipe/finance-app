@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  income
+  expense
+
+  @@map("transaction_type")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  categories   Category[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Category {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  name      String           @db.VarChar(100)
+  type      TransactionType
+  color     String           @default("#d4af37") @db.VarChar(7)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("categories")
+}
+
+model Transaction {
+  id         Int              @id @default(autoincrement())
+  userId     Int              @map("user_id")
+  categoryId Int              @map("category_id")
+  title      String           @db.VarChar(255)
+  amount     Decimal          @db.Decimal(12, 2)
+  date       DateTime         @db.Date
+  type       TransactionType
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([date])
+  @@map("transactions")
+}
