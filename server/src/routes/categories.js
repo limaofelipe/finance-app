@@ -30,12 +30,18 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
   const existing = await prisma.category.findFirst({ where: { id, userId: req.userId } });
   if (!existing) {
     return res.status(404).json({ error: "Category not found" });
   }
 
   const { name, type, color } = req.body;
+  if (type !== undefined && type !== "income" && type !== "expense") {
+    return res.status(400).json({ error: "type must be 'income' or 'expense'" });
+  }
   const updated = await prisma.category.update({
     where: { id },
     data: {
@@ -49,6 +55,9 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
   const existing = await prisma.category.findFirst({ where: { id, userId: req.userId } });
   if (!existing) {
     return res.status(404).json({ error: "Category not found" });
