@@ -12,6 +12,13 @@ export async function apiFetch(path, options = {}) {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
     throw new Error(body.error || `Request failed with status ${res.status}`);
   }
 
